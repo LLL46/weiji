@@ -1,0 +1,15 @@
+# TI CCS 构建产物
+Debug/
+
+# CCS 自动生成的 HTML 文档
+README.html
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# CCS 调试配置（每次导入项目会重新生成）
+.launches/

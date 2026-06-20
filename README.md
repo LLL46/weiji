@@ -1,52 +1,113 @@
-## Example Summary
-The following example configures the UART at 9600bps waiting to echo received
-characters.
-The device goes to Standby mode while waiting and uses interrupts to wake up.
+# 危极环境监测终端 (Weiji Environment Monitor)
 
-## Peripherals & Pin Assignments
+基于 TI MSPM0G3507 + ESP8266 的多传感器环境监测终端，通过 MQTT 协议上报光照、温度、气压数据至华为云 IoTDA 平台。
 
-| Peripheral | Pin | Function |
-| --- | --- | --- |
-| GPIOA | PA0 | Open-Drain Output |
-| GPIOA | PA15 | Standard Output |
-| SYSCTL |  |  |
-| UART0 | PA11 | RX Pin |
-| UART0 | PA10 | TX Pin |
-| EVENT |  |  |
-| DEBUGSS | PA20 | Debug Clock |
-| DEBUGSS | PA19 | Debug Data In Out |
+## 硬件平台
 
-## BoosterPacks, Board Resources & Jumper Settings
+| 模块 | 型号 | 接口 |
+|---|---|---|
+| MCU | MSPM0G3507 (Cortex-M0+, 80MHz) | — |
+| WiFi | ESP8266 (AT 固件) | UART2 (PB17/PB18) |
+| 光照传感器 | OPT3001 兼容 (I2C: 0x47) | I2C1 (PB2/PB3) |
+| 环境传感器 | BME280 / BMP280 (I2C: 0x77) | I2C1 同总线 |
+| OLED 显示屏 | 128×64 SSD1306 (SPI 软件模拟) | PB1/4/7/8 |
+| 4 位数码管 | 共阴动态扫描 (NTP 网络时钟) | PA13/12/8/25 + PB9/24/19/12/15 + PA28/31/24 |
 
-Visit [LP_MSPM0G3507](https://www.ti.com/tool/LP-MSPM0G3507) for LaunchPad information, including user guide and hardware files.
+## 功能特性
 
-| Pin | Peripheral | Function | LaunchPad Pin | LaunchPad Settings |
-| --- | --- | --- | --- | --- |
-| PA0 | GPIOA | PA0 | J27_9 | <ul><li>PA0 is 5V tolerant open-drain so it requires pull-up<br><ul><li>`J19 1:2` Use 3.3V pull-up<br><li>`J19 2:3` Use 5V pull-up</ul><br><li>PA0 can be connected to LED1<br><ul><li>`J4 ON` Connect to LED1<br><li>`J4 OFF` Disconnect from LED1</ul></ul> |
-| PA15 | GPIOA | PA15 | J3_30 | <ul><li>This pin can be used for testing purposes in boosterpack connector<ul><li>Pin can be reconfigured for general purpose as necessary</ul></ul> |
-| PA11 | UART0 | RX | J4_33/J26_6 | <ul><li>PA11 can be used as UART RX connected to XDS-110 backchannel, to boosterpack connector or to CAN/LIN connector:<br><ul><li>To use backchannel UART on J101:<br>  `J22 1:2`: Connects XDS-110 backchannel UART RX to `J101`<br>  `J101 7:8` Connects XDS-110 backchannel to UART RX<br><li>To use UART on boosterpack connector:<br>  `J22 2:3`: Connects UART RX to `J4_33`<br><li>To use on J26 CAN/LIN connector:<br>  `R63` is populated by default and connects pin to `J26_6`</ul></ul> |
-| PA10 | UART0 | TX | J4_34/J26_5 | <ul><li>PA10 can be used as UART TX connected to XDS-110 backchannel, to boosterpack connector or to CAN/LIN connector:<br><ul><li>To use backchannel UART on J101:<br>  `J21 1:2`: Connects XDS-110 backchannel UART TX to `J101`<br>  `J101 9:10` Connects XDS-110 backchannel to UART TX<br><li>To use UART on boosterpack connector:<br>  `J21 2:3`: Connects UART TX to `J4_34`<br><li>To use on J26 CAN/LIN connector:<br>  `R62` is populated by default and connects pin to `J26_5`</ul></ul> |
-| PA20 | DEBUGSS | SWCLK | N/A | <ul><li>PA20 is used by SWD during debugging<br><ul><li>`J101 15:16 ON` Connect to XDS-110 SWCLK while debugging<br><li>`J101 15:16 OFF` Disconnect from XDS-110 SWCLK if using pin in application</ul></ul> |
-| PA19 | DEBUGSS | SWDIO | N/A | <ul><li>PA19 is used by SWD during debugging<br><ul><li>`J101 13:14 ON` Connect to XDS-110 SWDIO while debugging<br><li>`J101 13:14 OFF` Disconnect from XDS-110 SWDIO if using pin in application</ul></ul> |
+- **三合一传感器采集**：光照 (lux)、温度 (°C)、气压 (hPa)
+- **OLED 实时显示**：传感器数值即时刷新
+- **NTP 网络时钟**：通过 ESP8266 SNTP 协议获取时间，4 位数码管动态显示 HH.MM
+- **华为云 IoTDA MQTT 上报**：每秒将传感器数据打包为 JSON 上报至华为云平台
+- **双串口透明桥接**：PC ↔ MCU ↔ ESP8266，方便调试
 
-### Device Migration Recommendations
-This project was developed for a superset device included in the LP_MSPM0G3507 LaunchPad. Please
-visit the [CCS User's Guide](https://software-dl.ti.com/msp430/esd/MSPM0-SDK/latest/docs/english/tools/ccs_ide_guide/doc_guide/doc_guide-srcs/ccs_ide_guide.html#sysconfig-project-migration)
-for information about migrating to other MSPM0 devices.
+## 开发环境
 
-### Low-Power Recommendations
-TI recommends to terminate unused pins by setting the corresponding functions to
-GPIO and configure the pins to output low or input with internal
-pullup/pulldown resistor.
+- **IDE**: TI Code Composer Studio (CCS) Theia 或 CCS Eclipse
+- **SDK**: MSPM0 SDK v2.05.01.00
+- **编译器**: TI Arm Clang Compiler (ti-cgt-armllvm)
+- **配置工具**: SysConfig 1.24.0+
 
-SysConfig allows developers to easily configure unused pins by selecting **Board**→**Configure Unused Pins**.
+## 导入与编译
 
-For more information about jumper configuration to achieve low-power using the
-MSPM0 LaunchPad, please visit the [LP-MSPM0G3507 User's Guide](https://www.ti.com/lit/slau873).
+### 1. 克隆仓库
 
-## Example Usage
-Compile, load and run the example.
-Connect to terminal if using Launchpad's back-channel UART, or connect to
-external device using BoosterPack.
-The UART will wait to receive data and respond with echo. Every time UART
-receives data the LED toggles and the USER_TEST matches the LED pin state.
+```bash
+git clone https://github.com/LLL46/weiji.git
+```
+
+### 2. 在 CCS 中导入项目
+
+1. 打开 CCS Theia (或 CCS Eclipse)
+2. `Project` → `Import CCS Projects...`
+3. 选择克隆下来的 `weiji` 目录
+4. 项目 `2026.8266.EXP` 会自动识别，勾选后点击 `Finish`
+
+### 3. 编译
+
+- 右键项目 → `Build Project`
+- 或快捷键 `Ctrl+B`
+
+首次编译时 SysConfig 会自动根据 `.syscfg` 文件生成 `ti_msp_dl_config.c` / `ti_msp_dl_config.h`。
+
+### 4. 烧录与运行
+
+- 通过 XDS110 调试器连接 LP-MSPM0G3507 LaunchPad
+- 右键项目 → `Debug As` → `Code Composer Debug Session`
+
+## 引脚分配
+
+| 外设 | 信号 | 引脚 | LaunchPad 位置 |
+|---|---|---|---|
+| UART0 (上位机) | TX / RX | PA10 / PA11 | J4_34 / J4_33 |
+| UART2 (ESP8266) | TX / RX | PB17 / PB18 | J2_18 / J2_17 |
+| I2C1 | SCL / SDA | PB2 / PB3 | J2_12 / J2_11 |
+| OLED SPI | SCK/SDA/RST/DC | PB8/PB7/PB4/PB1 | J2_8 / J2_7 / J1_4 / J2_9 |
+| 数码管位选 | DIG1~4 | PA13/12/8/25 | — |
+| 数码管段选 | A~G+DP | PB9/24/19/12/15 + PA28/31/24 | — |
+| LED | USER_LED1 | PA0 | J27_9 |
+| 调试 | SWCLK/SWDIO | PA20/PA19 | XDS110 |
+
+## 项目结构
+
+```
+2026.8266.EXP/
+├── .ccsproject              # CCS 项目配置
+├── .cproject                # CDT 编译配置
+├── .project                 # Eclipse 项目描述
+├── .settings/               # 编辑器设置
+├── targetConfigs/           # 调试器配置 (.ccxml)
+├── uart_echo_interrupts_standby.c   # 主程序 (main + 中断)
+├── uart_echo_interrupts_standby.syscfg  # SysConfig 引脚/外设配置
+├── 8266cmd/
+│   ├── command.c            # ESP8266 AT 指令常量
+│   └── command.h
+├── IICmodels/
+│   ├── sensors.c            # BME280/BH1750 传感器驱动
+│   └── sensors.h
+└── LQ12864.c / LQ12864.h    # OLED 12864 驱动 (SPI 软件模拟)
+```
+
+## 数据上报格式
+
+每秒上报一条 JSON 至华为云 IoTDA 设备影子：
+
+```json
+{
+  "services": [{
+    "service_id": "Environment",
+    "properties": {
+      "Light": 123.45,
+      "temperature": 25.67,
+      "pressure": 1013.25
+    }
+  }]
+}
+```
+
+## 注意事项
+
+- ESP8266 需刷入支持 MQTT AT 指令的固件（如安信可 AT v2.2.0+）
+- WiFi SSID/密码 和 MQTT 密钥当前硬编码在 `8266cmd/command.c` 中，发布前请替换或使用配置文件
+- 环境传感器地址为 0x77，上电后需约 2ms 初始化时间
+- 数码管段 A~E 在 GPIOB，段 F/G/DP 在 GPIOA，硬件接线时注意跨端口

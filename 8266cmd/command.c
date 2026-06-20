@@ -1,21 +1,29 @@
 #include "command.h"
 
 //------固定指令------//
-const char CMD_AT[] = "AT\r\n";
-const char CMD_RST[] = "AT+RST\r\n";
-const char CMD_GMR[] = "AT+GMR\r\n";
-const char CMD_CWMODE[] = "AT+CWMODE=1\r\n";
-const char CMD_CWJAP[] = "AT+CWJAP=\"具体wife名称\",\"对应密码\"\r\n";
-const char CMD_MQTTCONN[] = "AT+MQTTCONN=0,\"b28ff03eee.st1.iotda-device.cn-east-3.myhuaweicloud.com\",1883,1\r\n";
+const char CMD_AT[] = "AT";
+const char CMD_RST[] = "AT+RST";
+const char CMD_GMR[] = "AT+GMR";
+const char CMD_CWMODE[] = "AT+CWMODE=1";
+const char CMD_CWJAP[] = "AT+CWJAP=\"YOUR_WIFI_SSID\",\"YOUR_WIFI_PASSWORD\"";
+const char CMD_MQTTCONN[] = "AT+MQTTCONN=0,\"YOUR_MQTT_BROKER_HOST\",1883,1";
+// SNTP：启用、东八区(+8)、NTP 服务器
+const char CMD_CIPSNTPCFG[] = "AT+CIPSNTPCFG=1,8,\"ntp1.aliyun.com\",\"cn.pool.ntp.org\"";
+// 查询当前网络时间
+const char CMD_CIPSNTPTIME[] = "AT+CIPSNTPTIME?";
 //MQTT 账号鉴权配置
-const uint8_t CMD_MQTTUSERCFG[] = "AT+MQTTUSERCFG=0,1,\"6a09a50c18855b39c51a8b10_M001_0_0_2026051711\",\"6a09a50c18855b39c51a8b10_M001\",\"772c3c60ccb8bb1e228ad81864f114130fc382647e1b53cc098368989e499e5a\",0,0,\"\"\r\n";
+const char CMD_MQTTUSERCFG[] = "AT+MQTTUSERCFG=0,1,\"YOUR_DEVICE_ID\",\"YOUR_MQTT_USERNAME\",\"YOUR_MQTT_PASSWORD\",0,0,\"\"";
 //   ||
-const uint8_t CMD_MQTTUSERCFG3[] = "AT+MQTTUSERCFG=0,1,\"NULL\",\"6a09a50c18855b39c51a8b10_M001\",\"772c3c60ccb8bb1e228ad81864f114130fc382647e1b53cc098368989e499e5a\",0,0,\"\"\r\n";
-const uint8_t CMD_MQTTUSERCFG4[] = "AT+MQTTCLIENTID=0,\"6a09a50c18855b39c51a8b10_M001_0_0_2026051711\"\r\n";
+const char CMD_MQTTUSERCFG1[] = "AT+MQTTUSERCFG=0,1,\"NULL\",\"YOUR_MQTT_USERNAME\",\"YOUR_MQTT_PASSWORD\",0,0,\"\"";
+const char CMD_MQTTUSERCFG2[] = "AT+MQTTCLIENTID=0,\"YOUR_MQTT_CLIENT_ID\"";
 //   转义"
-const uint8_t CMD_MQTTPUB[] = "AT+MQTTPUB=0,\"$oc/devices/6a09a50c18855b39c51a8b10_M001/sys/properties/report\",\"{\\\"services\\\":[{\\\"service_id\\\":\\\"Battery\\\",\\\"properties\\\":{\\\"batteryLevel\\\":30,\\\"batteryVoltage\\\":3}}]}\",1,0\r\n";
+const char CMD_MQTTPUB[] = "AT+MQTTPUB=0,\"$oc/devices/YOUR_DEVICE_ID/sys/properties/report\",\"{\\\"services\\\":[{\\\"service_id\\\":\\\"Battery\\\",\\\"properties\\\":{\\\"batteryLevel\\\":30,\\\"batteryVoltage\\\":3}}]}\",1,0";
 
 
 //------变动指令------//
-uint8_t CMD_MQTTPUB_SENSOR[200] = "AT+MQTTPUB=0,\"$oc/devices/6a09a50c18855b39c51a8b10_M001/sys/properties/report\",\"{\\\"services\\\":[{\\\"service_id\\\":\\\"待定\\\",\\\"properties\\\":{\\\"待定\\\":%d}}]}\",1,0\r\n";
+char CMD_MQTTPUB_SENSOR_light[200] = "AT+MQTTPUB=0,\"$oc/devices/YOUR_DEVICE_ID/sys/properties/report\",\"{\\\"services\\\":[{\\\"service_id\\\":\\\"待定\\\",\\\"properties\\\":{\\\"待定\\\":%d}}]}\",1,0";
 
+// 运行时上报缓冲区（由主程序用 sprintf 填充实时传感器数值）
+//char CMD_MQTTPUB_SENSOR[MQTT_PUB_BUF_LEN];
+
+//AT+MQTTUSERCFG=0,1,"YOUR_DEVICE_ID","YOUR_MQTT_USERNAME","YOUR_MQTT_PASSWORD",0,0,""

@@ -13,6 +13,6 @@
 	<activeTargetConfiguration value="targetConfigs/MSPM0G3507.ccxml"/>
 	<isTargetConfigurationManual value="false"/>
 	<sourceLookupPath value="${COM_TI_MSPM0_SDK_INSTALL_DIR}/source/ti/driverlib"/>
-	<origin value="C:\ti\mspm0_sdk_2_05_01_00\examples\nortos\LP_MSPM0G3507\driverlib\uart_echo_interrupts_standby\ticlang\uart_echo_interrupts_standby_LP_MSPM0G3507_nortos_ticlang.projectspec"/>
+	<origin value="C:/ti/2026.8266.EXP"/>
 	<filesToOpen value="README.md,uart_echo_interrupts_standby.syscfg"/>
 </projectOptions>
