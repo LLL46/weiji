@@ -34,6 +34,11 @@
 #include "sensors.h"
 #include "command.h"
 #include "LQ12864.h"
+#include "SG90.h"
+#include "buzzer.h"
+#include "delay.h"
+#include "ASR.h"
+#include "K230.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -163,6 +168,10 @@ int main(void)
     NVIC_ClearPendingIRQ(UART_2_INST_INT_IRQN);
     NVIC_EnableIRQ(UART_2_INST_INT_IRQN);
 
+    NVIC_ClearPendingIRQ(UART1_INT_IRQn);
+    NVIC_EnableIRQ(UART1_INT_IRQn);
+
+    DL_Timer_startCounter(TIMA1);
 
     LCD_Init();
     sensor_light_init();
@@ -201,43 +210,71 @@ int main(void)
     //     GPIO_GRP_0_PIN_D_PIN | GPIO_GRP_0_PIN_E_PIN);
 
 
-    activate_8266();
+    // activate_8266();
 
-    data_cloud();
+    // data_cloud();
 
+    // while (1) {
+    //     sensor_light_read_lux();
+    //     // sprintf(CMD_MQTTPUB_SENSOR_light,
+    //     //     "AT+MQTTPUB=0,\"$oc/devices/YOUR_DEVICE_ID/sys/properties/report\",\"{\\\"services\\\":[{\\\"service_id\\\":\\\"Light\\\",\\\"properties\\\":{\\\"lox\\\":%.2f}}]}\",1,0",
+    //     //     nowLux);
+    //     // sendTo_8266(CMD_MQTTPUB_SENSOR_light);
+    //     // delay_cycles(32000000);
+
+    //     // 读取并上报温度/气压（service_id 与属性名为占位，待华为云产品模型确定后替换）
+    //     sensor_env_read();
+
+    //   LCD_P8x16Str(0,0,(unsigned char*)"light:");
+    //   sprintf(olcd_buf,"%.2f",nowLux);
+    //   LCD_P8x16Str(50,0,(unsigned char*)olcd_buf);
+    //   LCD_P6x8Str(0,3,(unsigned char*)"tempture:");
+    //   sprintf(olcd_buf,"%.2f",nowTemp);
+    //   LCD_P6x8Str(55,3,(unsigned char*)olcd_buf);
+    //   LCD_P6x8Str(0,6,(unsigned char*)"press:");
+    //   sprintf(olcd_buf,"%.2f",nowPress);
+    //   LCD_P6x8Str(40,6,(unsigned char*)olcd_buf);
+      
+      
+
+    // sprintf(envReport,
+    //     "AT+MQTTPUB=0,\"$oc/devices/YOUR_DEVICE_ID/sys/properties/report\",\"{\\\"services\\\":[{\\\"service_id\\\":\\\"Environment\\\",\\\"properties\\\":{\\\"Light\\\":%.2f,\\\"temperature\\\":%.2f,\\\"pressure\\\":%.2f}}]}\",1,0",
+    //     nowLux, nowTemp, nowPress);
+    // sendTo_8266(envReport);
+    // delay_cycles(32000000);
+
+    // // 查询 NTP 网络时间，回复由 UART_2 中断解析后显示在数码管
+    // sendTo_8266(CMD_CIPSNTPTIME);
+    // delay_cycles(32000000);
+    // LCD_CLS();
+
+    // }
+
+    //语音模块测试
+    //set_voice(init);
+
+    //视觉模块测试
+    if(K230_Data())
+    {
+        set_voice(init);
+    }
+    
     while (1) {
-        sensor_light_read_lux();
-        // sprintf(CMD_MQTTPUB_SENSOR_light,
-        //     "AT+MQTTPUB=0,\"$oc/devices/YOUR_DEVICE_ID/sys/properties/report\",\"{\\\"services\\\":[{\\\"service_id\\\":\\\"Light\\\",\\\"properties\\\":{\\\"lox\\\":%.2f}}]}\",1,0",
-        //     nowLux);
-        // sendTo_8266(CMD_MQTTPUB_SENSOR_light);
+        //舵机测试
+        // Servo_SetAngle(90);
+        // Servo_SetAngle(180);
+
+        //蜂鸣器测试
+        // Buzzer_Beep(1);
         // delay_cycles(32000000);
 
-        // 读取并上报温度/气压（service_id 与属性名为占位，待华为云产品模型确定后替换）
-        sensor_env_read();
+        //语音模块测试
+        // int i = read_camera_data();
+        // if (i == 95) {
+        //     Servo_SetAngle(180);
+        //     Servo_SetAngle(0);
+        // }
 
-      LCD_P8x16Str(0,0,(unsigned char*)"light:");
-      sprintf(olcd_buf,"%.2f",nowLux);
-      LCD_P8x16Str(50,0,(unsigned char*)olcd_buf);
-      LCD_P6x8Str(0,3,(unsigned char*)"tempture:");
-      sprintf(olcd_buf,"%.2f",nowTemp);
-      LCD_P6x8Str(55,3,(unsigned char*)olcd_buf);
-      LCD_P6x8Str(0,6,(unsigned char*)"press:");
-      sprintf(olcd_buf,"%.2f",nowPress);
-      LCD_P6x8Str(40,6,(unsigned char*)olcd_buf);
-      
-      
-
-    sprintf(envReport,
-        "AT+MQTTPUB=0,\"$oc/devices/YOUR_DEVICE_ID/sys/properties/report\",\"{\\\"services\\\":[{\\\"service_id\\\":\\\"Environment\\\",\\\"properties\\\":{\\\"Light\\\":%.2f,\\\"temperature\\\":%.2f,\\\"pressure\\\":%.2f}}]}\",1,0",
-        nowLux, nowTemp, nowPress);
-    sendTo_8266(envReport);
-    delay_cycles(32000000);
-
-    // 查询 NTP 网络时间，回复由 UART_2 中断解析后显示在数码管
-    sendTo_8266(CMD_CIPSNTPTIME);
-    delay_cycles(32000000);
-    LCD_CLS();
 
     }
 
